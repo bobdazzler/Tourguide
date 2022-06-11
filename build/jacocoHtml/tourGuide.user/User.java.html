@@ -12,23 +12,23 @@ public class User {
 	private String phoneNumber;
 	private String emailAddress;
 	private Date latestLocationTimestamp;
-<span class="nc" id="L15">	private List&lt;VisitedLocation&gt; visitedLocations = new ArrayList&lt;&gt;();</span>
-<span class="nc" id="L16">	private List&lt;UserReward&gt; userRewards = new ArrayList&lt;&gt;();</span>
-<span class="nc" id="L17">	private UserPreferences userPreferences = new UserPreferences();</span>
-<span class="nc" id="L18">	private List&lt;Provider&gt; tripDeals = new ArrayList&lt;&gt;();</span>
-<span class="nc" id="L19">	public User(UUID userId, String userName, String phoneNumber, String emailAddress) {</span>
-<span class="nc" id="L20">		this.userId = userId;</span>
-<span class="nc" id="L21">		this.userName = userName;</span>
-<span class="nc" id="L22">		this.phoneNumber = phoneNumber;</span>
-<span class="nc" id="L23">		this.emailAddress = emailAddress;</span>
-<span class="nc" id="L24">	}</span>
+<span class="fc" id="L15">	private List&lt;VisitedLocation&gt; visitedLocations = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L16">	private List&lt;UserReward&gt; userRewards = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L17">	private UserPreferences userPreferences = new UserPreferences();</span>
+<span class="fc" id="L18">	private List&lt;Provider&gt; tripDeals = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L19">	public User(UUID userId, String userName, String phoneNumber, String emailAddress) {</span>
+<span class="fc" id="L20">		this.userId = userId;</span>
+<span class="fc" id="L21">		this.userName = userName;</span>
+<span class="fc" id="L22">		this.phoneNumber = phoneNumber;</span>
+<span class="fc" id="L23">		this.emailAddress = emailAddress;</span>
+<span class="fc" id="L24">	}</span>
 	
 	public UUID getUserId() {
-<span class="nc" id="L27">		return userId;</span>
+<span class="fc" id="L27">		return userId;</span>
 	}
 	
 	public String getUserName() {
-<span class="nc" id="L31">		return userName;</span>
+<span class="fc" id="L31">		return userName;</span>
 	}
 	
 	public void setPhoneNumber(String phoneNumber) {
@@ -57,11 +57,11 @@ public class User {
 	
 	public void addToVisitedLocations(VisitedLocation visitedLocation) {
 		//System.out.println(&quot;$$$$$$$$$$$$$$$$$&quot;);
-<span class="nc" id="L60">		visitedLocations.add(visitedLocation);</span>
-<span class="nc" id="L61">	}</span>
+<span class="fc" id="L60">		visitedLocations.add(visitedLocation);</span>
+<span class="fc" id="L61">	}</span>
 	
 	public List&lt;VisitedLocation&gt; getVisitedLocations() {
-<span class="nc" id="L64">		return visitedLocations;</span>
+<span class="fc" id="L64">		return visitedLocations;</span>
 	}
 	
 	public void clearVisitedLocations() {
@@ -69,17 +69,17 @@ public class User {
 <span class="nc" id="L69">	}</span>
 	
 	public void addUserReward(UserReward userReward) {
-<span class="nc bnc" id="L72" title="All 4 branches missed.">		if(userRewards.stream().filter(r -&gt; !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {</span>
-<span class="nc" id="L73">			userRewards.add(userReward);</span>
+<span class="pc bpc" id="L72" title="1 of 4 branches missed.">		if(userRewards.stream().filter(r -&gt; !r.attraction.attractionName.equals(userReward.attraction)).count() == 0) {</span>
+<span class="fc" id="L73">			userRewards.add(userReward);</span>
 		}
-<span class="nc" id="L75">	}</span>
+<span class="fc" id="L75">	}</span>
 	
 	public List&lt;UserReward&gt; getUserRewards() {
-<span class="nc" id="L78">		return userRewards;</span>
+<span class="fc" id="L78">		return userRewards;</span>
 	}
 	
 	public UserPreferences getUserPreferences() {
-<span class="nc" id="L82">		return userPreferences;</span>
+<span class="fc" id="L82">		return userPreferences;</span>
 	}
 	
 	public void setUserPreferences(UserPreferences userPreferences) {
@@ -91,11 +91,11 @@ public class User {
 	}
 	
 	public void setTripDeals(List&lt;Provider&gt; tripDeals) {
-<span class="nc" id="L94">		this.tripDeals = tripDeals;</span>
-<span class="nc" id="L95">	}</span>
+<span class="fc" id="L94">		this.tripDeals = tripDeals;</span>
+<span class="fc" id="L95">	}</span>
 	
 	public List&lt;Provider&gt; getTripDeals() {
 <span class="nc" id="L98">		return tripDeals;</span>
 	}
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

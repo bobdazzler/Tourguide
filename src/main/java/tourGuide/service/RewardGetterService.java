@@ -8,13 +8,14 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class RewardGetterService {
 	 public int getAttractionRewardPoints(UUID attractionId, UUID userId){
 	        WebClient.Builder webClientBuilder = WebClient.builder();
-	        String JsonResponseFrom =webClientBuilder.build()
+	        String point =webClientBuilder.build()
 	                .get()
 	                .uri("http://localhost:8084/attractionRewardPoint?attractionId="+attractionId+"&userId="+userId)
 	                .retrieve()
 	                .bodyToMono(String.class)
 	                .block();
-	        return Integer.parseInt(JsonResponseFrom);
+	        
+	        return Integer.parseInt(point);
 	    }
 
 }

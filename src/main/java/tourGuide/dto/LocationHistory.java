@@ -6,17 +6,18 @@ import java.util.UUID;
 
 public class LocationHistory {
 	public UUID userId;
-	Map<String,Double> userIdAndDistanceByLongitudeAndLatitude = new HashMap<String,Double>();
+	Map<String,Double> distanceByLongitudeAndLatitude = new HashMap<String,Double>();
 	public UUID getUserId() {
 		return userId;
 	}
 	public void setUserId(UUID userId) {
 		this.userId = userId;
 	}
-	public Map<String, Double> getUserIdAndDistanceByLongitudeAndLatitude() {
-		return userIdAndDistanceByLongitudeAndLatitude;
+	public Map<String, Double> getDistanceByLongitudeAndLatitude() {
+		return distanceByLongitudeAndLatitude;
 	}
-	public void setUserIdAndDistanceByLongitudeAndLatitude(Map<String, Double> userIdAndDistanceByLongitudeAndLatitude) {
-		this.userIdAndDistanceByLongitudeAndLatitude = userIdAndDistanceByLongitudeAndLatitude;
+	public void setDistanceByLongitudeAndLatitude(Map<String, Double> distanceByLongitudeAndLatitude) {
+		this.distanceByLongitudeAndLatitude = distanceByLongitudeAndLatitude;
 	}
+	
 }

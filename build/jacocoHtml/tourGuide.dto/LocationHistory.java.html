@@ -6,18 +6,19 @@ import java.util.UUID;
 
 <span class="nc" id="L7">public class LocationHistory {</span>
 	public UUID userId;
-<span class="nc" id="L9">	Map&lt;String,Double&gt; userIdAndDistanceByLongitudeAndLatitude = new HashMap&lt;String,Double&gt;();</span>
+<span class="nc" id="L9">	Map&lt;String,Double&gt; distanceByLongitudeAndLatitude = new HashMap&lt;String,Double&gt;();</span>
 	public UUID getUserId() {
 <span class="nc" id="L11">		return userId;</span>
 	}
 	public void setUserId(UUID userId) {
 <span class="nc" id="L14">		this.userId = userId;</span>
 <span class="nc" id="L15">	}</span>
-	public Map&lt;String, Double&gt; getUserIdAndDistanceByLongitudeAndLatitude() {
-<span class="nc" id="L17">		return userIdAndDistanceByLongitudeAndLatitude;</span>
+	public Map&lt;String, Double&gt; getDistanceByLongitudeAndLatitude() {
+<span class="nc" id="L17">		return distanceByLongitudeAndLatitude;</span>
 	}
-	public void setUserIdAndDistanceByLongitudeAndLatitude(Map&lt;String, Double&gt; userIdAndDistanceByLongitudeAndLatitude) {
-<span class="nc" id="L20">		this.userIdAndDistanceByLongitudeAndLatitude = userIdAndDistanceByLongitudeAndLatitude;</span>
+	public void setDistanceByLongitudeAndLatitude(Map&lt;String, Double&gt; distanceByLongitudeAndLatitude) {
+<span class="nc" id="L20">		this.distanceByLongitudeAndLatitude = distanceByLongitudeAndLatitude;</span>
 <span class="nc" id="L21">	}</span>
+	
 }
-</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.4.201905082037</span></div></body></html>
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

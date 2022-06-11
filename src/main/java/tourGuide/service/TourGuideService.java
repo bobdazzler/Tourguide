@@ -35,6 +35,7 @@ public class TourGuideService {
 	private final TripPricer tripPricer = new TripPricer();
 	public final Tracker tracker;
 	boolean testMode = true;
+
 	public TourGuideService(GpsUtilService gpsUtilService, RewardsService rewardsService) {
 		this.gpsUtilService = gpsUtilService;
 		this.rewardsService = rewardsService;
@@ -48,6 +49,7 @@ public class TourGuideService {
 		tracker = new Tracker(this);
 		addShutDownHook();
 	}
+
 	/**
 	 * 
 	 * @param user
@@ -57,16 +59,18 @@ public class TourGuideService {
 	public List<UserReward> getUserRewards(User user) {
 		return user.getUserRewards();
 	}
-/**
- * 
- * @param user
- * @return current user location
- */
+
+	/**
+	 * 
+	 * @param user
+	 * @return current user location
+	 */
 	public VisitedLocation getUserLocation(User user) {
 		VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ? user.getLastVisitedLocation()
 				: trackUserLocation(user);
 		return visitedLocation;
 	}
+
 	/**
 	 * 
 	 * @param userName
@@ -78,16 +82,15 @@ public class TourGuideService {
 
 	/**
 	 * 
-	 * @return list of all users 
+	 * @return list of all users
 	 */
 	public List<User> getAllUsers() {
 		return internalUserMap.values().stream().collect(Collectors.toList());
 	}
-	
+
 	/**
 	 * 
-	 * @param user
-	 * add users to the internal user map
+	 * @param user add users to the internal user map
 	 */
 	public void addUser(User user) {
 		if (!internalUserMap.containsKey(user.getUserName())) {
@@ -95,6 +98,11 @@ public class TourGuideService {
 		}
 	}
 
+	/**
+	 * 
+	 * @param user
+	 * @return a list of providers
+	 */
 	public List<Provider> getTripDeals(User user) {
 		int cumulatativeRewardPoints = user.getUserRewards().stream().mapToInt(i -> i.getRewardPoints()).sum();
 		List<Provider> providers = tripPricer.getPrice(tripPricerApiKey, user.getUserId(),
@@ -104,13 +112,24 @@ public class TourGuideService {
 		return providers;
 	}
 
-	public VisitedLocation trackUserLocation(User user)  {
-		 VisitedLocation visitedLocation = gpsUtilService.getUserLocation(user.getUserId());
-	        user.addToVisitedLocations(visitedLocation);
-	        rewardsService.calculateRewards(user);
-	        return visitedLocation;
+	/**
+	 * adds to a list of user location and calculates the reward point of the user.
+	 * 
+	 * @param user
+	 * @return user location
+	 */
+	public VisitedLocation trackUserLocation(User user) {
+		VisitedLocation visitedLocation = gpsUtilService.getUserLocation(user.getUserId());
+		user.addToVisitedLocations(visitedLocation);
+		rewardsService.calculateRewards(user);
+		return visitedLocation;
 	}
 
+	/**
+	 * get a list of attractions at a particular location
+	 * @param visitedLocation
+	 * @return returns a list of attractions
+	 */
 	public List<Attraction> getNearByAttractions(VisitedLocation visitedLocation) {
 		List<Attraction> nearbyAttractions = new ArrayList<>();
 		for (Attraction attraction : gpsUtilService.getAttractions()) {
@@ -119,7 +138,11 @@ public class TourGuideService {
 		logger.info("attraction " + nearbyAttractions);
 		return nearbyAttractions;
 	}
-
+	/**
+	 * gets the all attractions and then sorts the attraction by distance following an ascending order of shortest distance
+	 * @param visitedLocation
+	 * @return sorted attractions distance
+	 */
 	public HashMap<Attraction, Double> sortNearByAttractionsByDistance(VisitedLocation visitedLocation) {
 		HashMap<Attraction, Double> nearbyAttractionsByMiles = new HashMap<Attraction, Double>();
 		for (Attraction attraction : getNearByAttractions(visitedLocation)) {
@@ -133,7 +156,11 @@ public class TourGuideService {
 		logger.info("sorted attractions by distance " + soretednearbyAttractionsByMiles);
 		return soretednearbyAttractionsByMiles;
 	}
-
+	/**
+	 * after sorting a list of 5 closest attractions to a user is returned. 
+	 * @param visitedLocation
+	 * @return a list of five closest attractions to a user
+	 */
 	public List<Attraction> get5ClosestAttractionsByMiles(VisitedLocation visitedLocation) {
 		HashMap<Attraction, Double> closestAttractionsByMiles = sortNearByAttractionsByDistance(visitedLocation);
 		List<Attraction> listOfAttractionsSorted = new ArrayList<Attraction>(closestAttractionsByMiles.keySet());
@@ -143,7 +170,12 @@ public class TourGuideService {
 		}
 		return closest5Attractions;
 	}
-
+	/**
+	 * a list of 5 closest attractions with details as requested in the requirement.
+	 * @param visitedLocation
+	 * @param user
+	 * @return a list of closest attraction detail of a user
+	 */
 	public List<AttractionDetails> getEachAttractionDetailsForAUser(VisitedLocation visitedLocation, User user) {
 
 		List<AttractionDetails> attractionDetailsList = new ArrayList<>();
@@ -160,15 +192,13 @@ public class TourGuideService {
 			attractionDetails.setRewardPoint(rewardsService.getRewardPoints(attraction, user));
 			attractionDetailsList.add(attractionDetails);
 		}
-		for (AttractionDetails attractionDetails1 : attractionDetailsList) {
-			logger.info("attraction name " + attractionDetails1.getAttraction() + " attraction reward point "
-					+ attractionDetails1.getRewardPoint() + " attraction distance "
-					+ attractionDetails1.getDistanceBetweenUserAndAttraction());
-		}
 		return attractionDetailsList;
 	}
-
-	public List<LocationHistory> locationHistoryOfAuser() {
+/**
+ * 
+ * @return location history of all users
+ */
+	public List<LocationHistory> locationHistoryOfUsers() {
 
 		List<LocationHistory> locationHistorys = new ArrayList<>();
 		List<User> users = getAllUsers();
@@ -179,21 +209,11 @@ public class TourGuideService {
 			VisitedLocation visitedLocation = getUserLocation(user);
 			location.put("Longitude", visitedLocation.location.latitude);
 			location.put("Latitude", visitedLocation.location.longitude);
-			locationHistory.setUserIdAndDistanceByLongitudeAndLatitude(location);
+			locationHistory.setDistanceByLongitudeAndLatitude(location);
 		}
 		return locationHistorys;
 	}
-	
-	 public HashMap<String, Location> getAllUsersCurrentLocation() {
-	        List<User> listOfUsers = getAllUsers();
-	        HashMap<String, Location> locationList = new HashMap<>();
-	        for (User user : listOfUsers) {
-	            String userId = user .getUserId().toString();
-	            Location location = user.getLastVisitedLocation().location;
-	            locationList.put(userId, location);
-	        }
-	        return locationList;
-	    }
+
 	private void addShutDownHook() {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
@@ -248,6 +268,5 @@ public class TourGuideService {
 		LocalDateTime localDateTime = LocalDateTime.now().minusDays(new Random().nextInt(30));
 		return Date.from(localDateTime.toInstant(ZoneOffset.UTC));
 	}
-
 
 }
