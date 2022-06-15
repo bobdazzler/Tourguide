@@ -1,6 +1,8 @@
 package tourGuide;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+
 import org.javamoney.moneta.Money;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,9 +24,16 @@ public class TourGuideController {
     public String index() {
         return "Greetings from TourGuide!";
     }
+    /**
+     * 
+     * @param userName
+     * @return location of a user
+     * @throws ExecutionException 
+     * @throws InterruptedException 
+     */
     
     @RequestMapping("/getLocation") 
-    public String getLocation(@RequestParam String userName) {
+    public String getLocation(@RequestParam String userName) throws InterruptedException, ExecutionException {
     	VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));
 		return JsonStream.serialize(visitedLocation.location);
     }
@@ -34,21 +43,27 @@ public class TourGuideController {
      * @return Name of Tourist attraction, Tourist attractions lat/long,The user's location lat/long,
      * The distance in miles between the user's location and each of the attractions.
      * The reward points for visiting each Attraction.
+     * @throws ExecutionException 
+     * @throws InterruptedException 
      */
     @RequestMapping("/getNearbyAttractions") 
-    public String getNearbyAttractions(@RequestParam String userName) {
+    public String getNearbyAttractions(@RequestParam String userName) throws InterruptedException, ExecutionException {
     	User user = getUser(userName);
     	VisitedLocation visitedLocation = tourGuideService.getUserLocation(user);
     	return JsonStream.serialize(tourGuideService.getEachAttractionDetailsForAUser(visitedLocation,user));
     }
-    
+    /**
+     * 
+     * @param userName
+     * @return get reward for a user
+     */
     @RequestMapping("/getRewards") 
     public String getRewards(@RequestParam String userName) {
     	return JsonStream.serialize(tourGuideService.getUserRewards(getUser(userName)));
     }
     
     @RequestMapping("/getAllCurrentLocations")
-    public String getAllCurrentLocations()  {
+    public String getAllCurrentLocations() throws InterruptedException, ExecutionException  {
     	// Gets a list of every user's most recent location as JSON
     	//- Note: does not use gpsUtil to query for their current location, 
     	//        but rather gathers the user's current location from their stored location history.
@@ -62,19 +77,37 @@ public class TourGuideController {
     	
     	return JsonStream.serialize(tourGuideService.locationHistoryOfUsers());
     }
-    
+    /**
+     * 
+     * @param userName
+     * @return get tripDeals
+     */
     @RequestMapping("/getTripDeals")
     public String getTripDeals(@RequestParam String userName) {
     	List<Provider> providers = tourGuideService.getTripDeals(getUser(userName));
     	return JsonStream.serialize(providers);
     }
-    
+    /**
+     * 
+     * @param userName
+     * @return user preferences
+     */
     @RequestMapping("/getUserPreference")
     public String getUserPreference(@RequestParam String userName) {
         User user = getUser(userName);
         return JsonStream.serialize(user.getUserPreferences());
     }
-
+    /**
+     * 
+     * @param userName
+     * @param attractionProximity
+     * @param lowerPricePoint
+     * @param highPricePoint
+     * @param tripDuration
+     * @param ticketQuantity
+     * @param numberOfAdults
+     * @param numberOfChildren
+     */
     @RequestMapping("/setUserPreference")
     public void setUserPreference(@RequestParam String userName, @RequestParam int attractionProximity, @RequestParam Money lowerPricePoint,
                                   @RequestParam Money highPricePoint, @RequestParam int tripDuration,

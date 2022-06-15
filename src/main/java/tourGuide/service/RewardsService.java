@@ -1,9 +1,11 @@
 package tourGuide.service;
-
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import tourGuide.gpsUtil.Attraction;
 import tourGuide.gpsUtil.Location;
@@ -21,7 +23,7 @@ public class RewardsService {
 	private int attractionProximityRange = 200;
 	private final GpsUtilService gpsUtilService;
 	private final RewardGetterService rewardGetterService;
-	ExecutorService executorservice = Executors.newFixedThreadPool(100);
+	ExecutorService executorService = Executors.newFixedThreadPool(1000);
 	public RewardsService(GpsUtilService gpsUtilService, RewardGetterService rewardGetterService) {
 		this.gpsUtilService = gpsUtilService;
 		this.rewardGetterService = rewardGetterService;
@@ -36,18 +38,34 @@ public class RewardsService {
 	}
 	
 	public void calculateRewards(User user) {
-		List<VisitedLocation> userLocations = user.getVisitedLocations();
 		List<Attraction> attractions = gpsUtilService.getAttractions();
-		
+		List<VisitedLocation> userLocations = user.getVisitedLocations().stream().collect(Collectors.toList());
 		for(VisitedLocation visitedLocation : userLocations) {
 			for(Attraction attraction : attractions) {
 				if(user.getUserRewards().stream().filter(r -> r.attraction.attractionName.equals(attraction.attractionName)).count() == 0) {
 					if(nearAttraction(visitedLocation, attraction)) {
-						user.addUserReward(new UserReward(visitedLocation, attraction, getRewardPoints(attraction, user)));
+						calculateDistanceReward(user, visitedLocation, attraction);
 					}
 				}
 			}
 		}
+	}
+	public void calculateDistanceReward(User user, VisitedLocation visitedLocation, Attraction attraction) {
+		Double distance = getDistance(attraction, visitedLocation.location);
+		if(distance <= attractionProximityRange) {
+			UserReward userReward = new UserReward(visitedLocation, attraction, distance.intValue());
+			getRewardPoints(userReward, attraction, user);
+		}
+	}
+	
+	private void getRewardPoints(UserReward userReward, Attraction attraction, User user) {
+		CompletableFuture.supplyAsync(() -> {
+		    return rewardGetterService.getAttractionRewardPoints(attraction.attractionId, user.getUserId());
+		}, executorService)
+			.thenAccept(points -> { 
+				userReward.setRewardPoints(points);
+				user.addUserReward(userReward);
+			});
 	}
 	
 	public boolean isWithinAttractionProximity(Attraction attraction, Location location) {

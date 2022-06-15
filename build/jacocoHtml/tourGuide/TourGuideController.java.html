@@ -3,31 +3,39 @@
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import org.javamoney.moneta.Money;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.jsoniter.output.JsonStream;
-
 import tourGuide.gpsUtil.VisitedLocation;
 import tourGuide.service.TourGuideService;
 import tourGuide.user.User;
+import tourGuide.user.UserPreferences;
 import tripPricer.Provider;
 
 @RestController
-<span class="nc" id="L18">public class TourGuideController {</span>
+<span class="nc" id="L19">public class TourGuideController {</span>
 	@Autowired
 	TourGuideService tourGuideService;
 	
     @RequestMapping(&quot;/&quot;)
     public String index() {
-<span class="nc" id="L24">        return &quot;Greetings from TourGuide!&quot;;</span>
+<span class="nc" id="L25">        return &quot;Greetings from TourGuide!&quot;;</span>
     }
+    /**
+     * 
+     * @param userName
+     * @return location of a user
+     * @throws ExecutionException 
+     * @throws InterruptedException 
+     */
     
     @RequestMapping(&quot;/getLocation&quot;) 
-    public String getLocation(@RequestParam String userName) {
-<span class="nc" id="L29">    	VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));</span>
-<span class="nc" id="L30">		return JsonStream.serialize(visitedLocation.location);</span>
+    public String getLocation(@RequestParam String userName) throws InterruptedException, ExecutionException {
+<span class="nc" id="L37">    	VisitedLocation visitedLocation = tourGuideService.getUserLocation(getUser(userName));</span>
+<span class="nc" id="L38">		return JsonStream.serialize(visitedLocation.location);</span>
     }
     /**
      * this api returns 5 attractions closest to a user with some of it details
@@ -35,22 +43,28 @@ import tripPricer.Provider;
      * @return Name of Tourist attraction, Tourist attractions lat/long,The user's location lat/long,
      * The distance in miles between the user's location and each of the attractions.
      * The reward points for visiting each Attraction.
+     * @throws ExecutionException 
+     * @throws InterruptedException 
      */
     @RequestMapping(&quot;/getNearbyAttractions&quot;) 
-    public String getNearbyAttractions(@RequestParam String userName) {
-<span class="nc" id="L41">    	User user = getUser(userName);</span>
-<span class="nc" id="L42">    	VisitedLocation visitedLocation = tourGuideService.getUserLocation(user);</span>
-<span class="nc" id="L43">    	return JsonStream.serialize(tourGuideService.getEachAttractionDetailsForAUser(visitedLocation,user));</span>
+    public String getNearbyAttractions(@RequestParam String userName) throws InterruptedException, ExecutionException {
+<span class="nc" id="L51">    	User user = getUser(userName);</span>
+<span class="nc" id="L52">    	VisitedLocation visitedLocation = tourGuideService.getUserLocation(user);</span>
+<span class="nc" id="L53">    	return JsonStream.serialize(tourGuideService.getEachAttractionDetailsForAUser(visitedLocation,user));</span>
     }
-    
+    /**
+     * 
+     * @param userName
+     * @return get reward for a user
+     */
     @RequestMapping(&quot;/getRewards&quot;) 
     public String getRewards(@RequestParam String userName) {
-<span class="nc" id="L48">    	return JsonStream.serialize(tourGuideService.getUserRewards(getUser(userName)));</span>
+<span class="nc" id="L62">    	return JsonStream.serialize(tourGuideService.getUserRewards(getUser(userName)));</span>
     }
     
     @RequestMapping(&quot;/getAllCurrentLocations&quot;)
-    public String getAllCurrentLocations()  {
-    	// TODO: Get a list of every user's most recent location as JSON
+    public String getAllCurrentLocations() throws InterruptedException, ExecutionException  {
+    	// Gets a list of every user's most recent location as JSON
     	//- Note: does not use gpsUtil to query for their current location, 
     	//        but rather gathers the user's current location from their stored location history.
     	//
@@ -61,17 +75,59 @@ import tripPricer.Provider;
     	//     }
     	
     	
-<span class="nc" id="L64">    	return JsonStream.serialize(tourGuideService.locationHistoryOfUsers());</span>
+<span class="nc" id="L78">    	return JsonStream.serialize(tourGuideService.locationHistoryOfUsers());</span>
     }
-    
+    /**
+     * 
+     * @param userName
+     * @return get tripDeals
+     */
     @RequestMapping(&quot;/getTripDeals&quot;)
     public String getTripDeals(@RequestParam String userName) {
-<span class="nc" id="L69">    	List&lt;Provider&gt; providers = tourGuideService.getTripDeals(getUser(userName));</span>
-<span class="nc" id="L70">    	return JsonStream.serialize(providers);</span>
+<span class="nc" id="L87">    	List&lt;Provider&gt; providers = tourGuideService.getTripDeals(getUser(userName));</span>
+<span class="nc" id="L88">    	return JsonStream.serialize(providers);</span>
     }
+    /**
+     * 
+     * @param userName
+     * @return user preferences
+     */
+    @RequestMapping(&quot;/getUserPreference&quot;)
+    public String getUserPreference(@RequestParam String userName) {
+<span class="nc" id="L97">        User user = getUser(userName);</span>
+<span class="nc" id="L98">        return JsonStream.serialize(user.getUserPreferences());</span>
+    }
+    /**
+     * 
+     * @param userName
+     * @param attractionProximity
+     * @param lowerPricePoint
+     * @param highPricePoint
+     * @param tripDuration
+     * @param ticketQuantity
+     * @param numberOfAdults
+     * @param numberOfChildren
+     */
+    @RequestMapping(&quot;/setUserPreference&quot;)
+    public void setUserPreference(@RequestParam String userName, @RequestParam int attractionProximity, @RequestParam Money lowerPricePoint,
+                                  @RequestParam Money highPricePoint, @RequestParam int tripDuration,
+                                  @RequestParam int ticketQuantity, @RequestParam int numberOfAdults,
+                                  @RequestParam int numberOfChildren) {
+<span class="nc" id="L116">        User user = getUser(userName);</span>
+<span class="nc" id="L117">        UserPreferences userPreferences = new UserPreferences();</span>
+<span class="nc" id="L118">        userPreferences.setAttractionProximity(attractionProximity);</span>
+<span class="nc" id="L119">        userPreferences.setLowerPricePoint(lowerPricePoint);</span>
+<span class="nc" id="L120">        userPreferences.setHighPricePoint(highPricePoint);</span>
+<span class="nc" id="L121">        userPreferences.setTripDuration(tripDuration);</span>
+<span class="nc" id="L122">        userPreferences.setTicketQuantity(ticketQuantity);</span>
+<span class="nc" id="L123">        userPreferences.setNumberOfAdults(numberOfAdults);</span>
+<span class="nc" id="L124">        userPreferences.setNumberOfChildren(numberOfChildren);</span>
+<span class="nc" id="L125">        user.setUserPreferences(userPreferences);</span>
+<span class="nc" id="L126">    }</span>
+
     
     private User getUser(String userName) {
-<span class="nc" id="L74">    	return tourGuideService.getUser(userName);</span>
+<span class="nc" id="L130">    	return tourGuideService.getUser(userName);</span>
     }
    
 

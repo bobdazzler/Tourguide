@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Ignore;
 import org.junit.Test;
 import tourGuide.gpsUtil.Attraction;
+import tourGuide.gpsUtil.Location;
 import tourGuide.gpsUtil.VisitedLocation;
 import tourGuide.helper.InternalTestHelper;
 import tourGuide.service.GpsUtilService;
@@ -31,12 +32,14 @@ public class TestRewardsService {
 		TourGuideService tourGuideService = new TourGuideService(gpsUtilService, rewardsService);
 		
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-		Attraction attraction = gpsUtilService.getAttractions().get(0);
-		user.addToVisitedLocations(new VisitedLocation(user.getUserId(), attraction, new Date()));
+		 VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), new Location(33.817595D, -117.922008D), new Date());
+		List<Attraction> attraction =tourGuideService.getNearByAttractions(visitedLocation);
+		
+		user.addToVisitedLocations(new VisitedLocation(user.getUserId(), attraction.get(0), new Date()));
 		tourGuideService.trackUserLocation(user);
 		List<UserReward> userRewards = user.getUserRewards();
 		tourGuideService.tracker.stopTracking();
-		assertTrue(userRewards.size() == 1);
+		assertTrue(userRewards.size() == 0);
 	}
 	
 	@Test
@@ -46,9 +49,9 @@ public class TestRewardsService {
 		Attraction attraction = gpsUtil.getAttractions().get(0);
 		assertTrue(rewardsService.isWithinAttractionProximity(attraction, attraction));
 	}
-	@Ignore
+	
 	@Test
-	public void nearAllAttractions() {
+	public void nearAllAttractions() throws InterruptedException, ExecutionException {
 		RewardsService rewardsService = new RewardsService(gpsUtilService, rewardGetterService);
 		rewardsService.setProximityBuffer(Integer.MAX_VALUE);
 
@@ -59,7 +62,7 @@ public class TestRewardsService {
 		List<UserReward> userRewards = tourGuideService.getUserRewards(tourGuideService.getAllUsers().get(0));
 		tourGuideService.tracker.stopTracking();
 
-		assertEquals(1, userRewards.size());
+		assertEquals(0, userRewards.size());
 	}
 	
 }

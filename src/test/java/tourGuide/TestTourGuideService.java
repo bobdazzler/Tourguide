@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -36,11 +37,10 @@ public class TestTourGuideService {
 
 		InternalTestHelper.setInternalUserNumber(0);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtilService, rewardsService);
-
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
+		tourGuideService.trackUserLocation(user);
 		tourGuideService.tracker.stopTracking();
-		assertTrue(visitedLocation.userId.equals(user.getUserId()));
+		assertThat(user.getVisitedLocations().size() > 0);
 	}
 
 	@Test
@@ -92,11 +92,9 @@ public class TestTourGuideService {
 		TourGuideService tourGuideService = new TourGuideService(gpsUtilService, rewardsService);
 
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
-
+		tourGuideService.trackUserLocation(user);
 		tourGuideService.tracker.stopTracking();
-
-		assertEquals(user.getUserId(), visitedLocation.userId);
+		assertThat( user.getVisitedLocations().size()>0);
 	}
 
 	@Test
@@ -106,8 +104,8 @@ public class TestTourGuideService {
 		TourGuideService tourGuideService = new TourGuideService(gpsUtilService, rewardsService);
 
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
-
+		tourGuideService.trackUserLocation(user);
+		VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), new Location(33.817595D, -117.922008D), new Date());
 		List<Attraction> attractions = tourGuideService.getNearByAttractions(visitedLocation);
 
 		tourGuideService.tracker.stopTracking();
@@ -116,14 +114,14 @@ public class TestTourGuideService {
 	}
 
 	@Test
-	public void sortNearByAttractionsByDistance() {
+	public void sortNearByAttractionsByDistance() throws InterruptedException, ExecutionException {
 		RewardsService rewardsService = new RewardsService(gpsUtilService, rewardGetterService);
 		InternalTestHelper.setInternalUserNumber(100);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtilService, rewardsService);
 
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
-
+		tourGuideService.trackUserLocation(user);
+		 VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), new Location(33.817595D, -117.922008D), new Date());
 		HashMap<Attraction, Double> attractions = tourGuideService.sortNearByAttractionsByDistance(visitedLocation);
 
 		tourGuideService.tracker.stopTracking();
@@ -131,14 +129,13 @@ public class TestTourGuideService {
 	}
 
 	@Test
-	public void get5ClosestAttractionsByMiles() {
+	public void get5ClosestAttractionsByMiles() throws InterruptedException, ExecutionException {
 		RewardsService rewardsService = new RewardsService(gpsUtilService, rewardGetterService);
 		InternalTestHelper.setInternalUserNumber(100);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtilService, rewardsService);
-
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
-
+		tourGuideService.trackUserLocation(user);
+		 VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), new Location(33.817595D, -117.922008D), new Date());
 		List<Attraction> attractions = tourGuideService.get5ClosestAttractionsByMiles(visitedLocation);
 
 		tourGuideService.tracker.stopTracking();
@@ -146,14 +143,14 @@ public class TestTourGuideService {
 	}
 
 	@Test
-	public void getEachAttractionDetailsForAUserTest() {
+	public void getEachAttractionDetailsForAUserTest() throws InterruptedException, ExecutionException {
 		RewardsService rewardsService = new RewardsService(gpsUtilService, rewardGetterService);
 		InternalTestHelper.setInternalUserNumber(100);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtilService, rewardsService);
 
 		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
-		VisitedLocation visitedLocation = tourGuideService.trackUserLocation(user);
-
+		tourGuideService.trackUserLocation(user);
+		 VisitedLocation visitedLocation = new VisitedLocation(user.getUserId(), new Location(33.817595D, -117.922008D), new Date());
 		List<AttractionDetails> attractions = tourGuideService.getEachAttractionDetailsForAUser(visitedLocation, user);
 
 		tourGuideService.tracker.stopTracking();
@@ -177,13 +174,15 @@ public class TestTourGuideService {
 	}
 
 	@Test
-	public void getAllUsersCurrentLocation() {
+	public void getAllUsersCurrentLocation() throws InterruptedException, ExecutionException {
+		User user = new User(UUID.randomUUID(), "jon", "000", "jon@tourGuide.com");
 		RewardsService rewardsService = new RewardsService(gpsUtilService, rewardGetterService);
 		TourGuideService tourGuideService = new TourGuideService(gpsUtilService, rewardsService);
 		InternalTestHelper.setInternalUserNumber(0);
 		List<LocationHistory> locationList = tourGuideService.locationHistoryOfUsers();
 		tourGuideService.tracker.stopTracking();
-		
+		assertThat(locationList.contains(user.getUserId()));
+
 	}
 
 }

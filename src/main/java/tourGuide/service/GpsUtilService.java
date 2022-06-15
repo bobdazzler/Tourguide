@@ -18,6 +18,7 @@ public class GpsUtilService {
 	     * this method connects with the gpsUntil api and gets the list of attractions
 	     * @return list of all attractions
 	     */
+	 
 	    public List<Attraction> getAttractions() {
 	        WebClient.Builder webClientBuilder = WebClient.builder();
 	        String jsonResponseFromGetAttraction = webClientBuilder.build()

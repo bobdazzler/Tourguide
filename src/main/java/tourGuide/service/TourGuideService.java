@@ -10,6 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.slf4j.Logger;
@@ -35,19 +39,31 @@ public class TourGuideService {
 	private final TripPricer tripPricer = new TripPricer();
 	public final Tracker tracker;
 	boolean testMode = true;
+	private ExecutorService executor = Executors.newFixedThreadPool(10000);
 
 	public TourGuideService(GpsUtilService gpsUtilService, RewardsService rewardsService) {
 		this.gpsUtilService = gpsUtilService;
 		this.rewardsService = rewardsService;
 
-		if (testMode) {
-			logger.info("TestMode enabled");
-			logger.debug("Initializing users");
-			initializeInternalUsers();
-			logger.debug("Finished initializing users");
-		}
+		logger.debug("Initializing users");
+		initializeInternalUsers();
+		logger.debug("Finished initializing users");
 		tracker = new Tracker(this);
+		initializeTripPricer();
 		addShutDownHook();
+	}
+	
+	private void addShutDownHook() {
+		Runtime.getRuntime().addShutdownHook(new Thread() { 
+		      public void run() {
+		        System.out.println("Shutdown TourGUideService");
+		        tracker.stopTracking();
+		      } 
+		    }); 
+	}
+	
+	private void initializeTripPricer() {
+		logger.debug("Initialize tripPricer");
 	}
 
 	/**
@@ -64,11 +80,11 @@ public class TourGuideService {
 	 * 
 	 * @param user
 	 * @return current user location
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
 	public VisitedLocation getUserLocation(User user) {
-		VisitedLocation visitedLocation = (user.getVisitedLocations().size() > 0) ? user.getLastVisitedLocation()
-				: trackUserLocation(user);
-		return visitedLocation;
+		return user.getVisitedLocations().get(0);
 	}
 
 	/**
@@ -93,9 +109,8 @@ public class TourGuideService {
 	 * @param user add users to the internal user map
 	 */
 	public void addUser(User user) {
-		if (!internalUserMap.containsKey(user.getUserName())) {
+		
 			internalUserMap.put(user.getUserName(), user);
-		}
 	}
 
 	/**
@@ -117,12 +132,25 @@ public class TourGuideService {
 	 * 
 	 * @param user
 	 * @return user location
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	public VisitedLocation trackUserLocation(User user) {
-		VisitedLocation visitedLocation = gpsUtilService.getUserLocation(user.getUserId());
+	
+	public void trackUserLocation(User user) {
+		submitLocation(user,this);
+		
+	}
+	public void submitLocation(User user,TourGuideService TourGuideService) {
+		CompletableFuture.supplyAsync(() -> {
+		    return gpsUtilService.getUserLocation(user.getUserId());
+		}, executor)
+			.thenAccept(visitedLocation -> { finalizeLocation(user, visitedLocation); });
+	}
+	public void finalizeLocation(User user, VisitedLocation visitedLocation) {
 		user.addToVisitedLocations(visitedLocation);
+		logger.info("visitedLocatio "+ visitedLocation);
 		rewardsService.calculateRewards(user);
-		return visitedLocation;
+		tracker.finalizeTrack(user);
 	}
 
 	/**
@@ -197,8 +225,10 @@ public class TourGuideService {
 /**
  * 
  * @return location history of all users
+ * @throws ExecutionException 
+ * @throws InterruptedException 
  */
-	public List<LocationHistory> locationHistoryOfUsers() {
+	public List<LocationHistory> locationHistoryOfUsers() throws InterruptedException, ExecutionException {
 
 		List<LocationHistory> locationHistorys = new ArrayList<>();
 		List<User> users = getAllUsers();
@@ -214,13 +244,6 @@ public class TourGuideService {
 		return locationHistorys;
 	}
 
-	private void addShutDownHook() {
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			public void run() {
-				tracker.stopTracking();
-			}
-		});
-	}
 
 	/**********************************************************************************
 	 * 
